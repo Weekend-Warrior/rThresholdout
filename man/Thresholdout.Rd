@@ -28,6 +28,7 @@ Create Thresholdout object for adaptive data analysis and holdout reuse.
   \item{\code{$Record}}{gets the Record of previous queries.}
 }
 }
+
 \examples{
 library(rThresholdout)
 Thresholdout_Obj <- Thresholdout$new(Threshold = 0.04, Sigma = 0.01, Budget = 1000)
@@ -35,4 +36,3 @@ Thresholdout_Obj$query(train_val = c(0.06, 0.07), holdout_val = c(0.05, 0.08))
 
 }
 \keyword{datasets}
-
