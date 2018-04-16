@@ -7,17 +7,12 @@
 #'
 #' @section Methods:
 #' \describe{
-#'   \item{\code{$new(Threshold, Sigma, Budget)}}{Creates a new \code{Thresholdout} object.}
-#'   \item{\code{$query(train_val, holdout_val)}}{Sends a query to the holdout dataset.}
+#'   \item{\code{$new(metric, train_target, holdout_target, threshold, sigma, budget)}}{Creates a new \code{Thresholdout} object.}
+#'   \item{\code{$query(train_pred, holdout_pred)}}{Sends a query to the holdout dataset.}
 #' }
 #'
 #' @section Actives:
-#' \describe{
-#'   \item{\code{$Threshold}}{gets the Threshold value.}
-#'   \item{\code{$Sigma}}{gets the Sigma value.}
-#'   \item{\code{$Budget}}{gets the remaining Budget value.}
-#'   \item{\code{$Record}}{gets the Record of previous queries.}
-#' }
+#' \describe{None. See Thresholdout.}
 #'
 #' @examples
 #' library(rThresholdout)
@@ -46,7 +41,19 @@
 #' # Thresholdout returns metrics derived from train and holdout data sets.
 #' Thresholdout_Obj <- Thresholdout$new(Threshold = 0.04, Sigma = 0.01, Budget = 1000)
 #' Thresholdout_Obj$query(train_val = train_metrics, holdout_val = holdout_metrics)
-#'
+#' 
+#' 
+#' # HoldoutMetrics simplifies this process
+#' HoldoutMetrics_Obj <- HoldoutMetrics$new(metric = auc,
+#'                                          train_target = train_target,
+#'                                          holdout_target = holdout_target,
+#'                                          threshold = 0.04,
+#'                                          sigma = 0.01,
+#'                                          budget = 1000)
+#' 
+#' HoldoutMetrics_Obj$query(train_preds,
+#'                          holdout_preds)
+#' 
 #' @import ModelMetrics
 #' @importFrom R6 R6Class
 #' @export
@@ -68,10 +75,10 @@ HoldoutMetrics <- R6Class('HoldoutMetrics',
                                         query = function(train_pred,
                                                          holdout_pred){
                                           train_metric <- private$metric(actual = private$train_target,
-                                                                         predicted = train_pred)
+                                                                         predicted = train_pred)[[1]] 
                                           
                                           holdout_metric <- private$metric(actual = private$holdout_target,
-                                                                           predicted = holdout_pred)
+                                                                           predicted = holdout_pred)[[1]]
                                           
                                           return(private$thresholdout$query(train_val = train_metric,
                                                                             holdout_val = holdout_metric))
