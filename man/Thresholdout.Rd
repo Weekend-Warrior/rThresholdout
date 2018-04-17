@@ -14,7 +14,7 @@ Create Thresholdout object for adaptive data analysis and holdout reuse.
 \section{Methods}{
 
 \describe{
-  \item{\code{$new(Threshold, Sigma, Budget)}}{Creates a new \code{Thresholdout} object.}
+  \item{\code{$new(threshold, sigma, budget)}}{Creates a new \code{Thresholdout} object.}
   \item{\code{$query(train_val, holdout_val)}}{Sends a query to the holdout dataset.}
 }
 }
@@ -22,16 +22,16 @@ Create Thresholdout object for adaptive data analysis and holdout reuse.
 \section{Actives}{
 
 \describe{
-  \item{\code{$Threshold}}{gets the Threshold value.}
-  \item{\code{$Sigma}}{gets the Sigma value.}
-  \item{\code{$Budget}}{gets the remaining Budget value.}
-  \item{\code{$Record}}{gets the Record of previous queries.}
+  \item{\code{$threshold}}{gets the threshold value.}
+  \item{\code{$sigma}}{gets the sigma value.}
+  \item{\code{$budget}}{gets the remaining budget value.}
+  \item{\code{$record}}{gets the record of previous queries.}
 }
 }
 
 \examples{
 library(rThresholdout)
-Thresholdout_Obj <- Thresholdout$new(Threshold = 0.04, Sigma = 0.01, Budget = 1000)
+Thresholdout_Obj <- Thresholdout$new(threshold = 0.04, sigma = 0.01, budget = 1000)
 Thresholdout_Obj$query(train_val = c(0.06, 0.07), holdout_val = c(0.05, 0.08))
 
 }
