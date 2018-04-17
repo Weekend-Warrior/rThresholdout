@@ -58,6 +58,7 @@
 #' @importFrom R6 R6Class
 #' @importFrom assertive.types assert_is_numeric
 #' @importFrom assertive.types assert_is_function
+#' @importFrom assertive.types assert_is_character
 #' @export
 
 HoldoutMetrics <- R6Class('HoldoutMetrics',
@@ -92,8 +93,8 @@ HoldoutMetrics <- R6Class('HoldoutMetrics',
                           active = list(metric = function(value) {
                                           if(!missing(value)) {
                                             if(is.character(value)) {
-                                              assert_is_character(value)
-                                              private$..metric #<- get_ModelMetric(value)
+                                              assertive.types::assert_is_character(value)
+                                              private$..metric <- eval(parse(text = paste0("ModelMetrics::", value)))
                                             } else {
                                               assertive.types::assert_is_function(value)
                                               private$..metric <- value
