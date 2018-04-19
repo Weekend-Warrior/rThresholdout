@@ -75,16 +75,10 @@ Thresholdout <- R6Class(
   ),
   active = list(
     threshold = function(value) {
-      if(!missing(value)) {
-        assert_is_numeric(value)
-        private$..threshold <- value
-      } else private$..threshold
+      private$..threshold
     },
     sigma = function(value) {
-      if(!missing(value)) {
-        assert_is_numeric(value)
-        private$..sigma <- value
-      } else private$..sigma
+      private$..sigma
     },
     budget = function() {
       private$..budget

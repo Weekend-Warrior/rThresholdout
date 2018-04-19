@@ -62,11 +62,12 @@
 #' @export
 
 HoldoutMetrics <- R6Class('HoldoutMetrics',
+                          inherit = Thresholdout,
                           public = list(initialize = function(metric,
                                                               train_target,
                                                               holdout_target,
                                                               threshold,
-                                                              sigma) {
+                                                              tolerance) {
                                           private$..metric <- if(is.character(metric)) {
                                             assertive.types::assert_is_character(metric)
                                             private$..metric <- eval(parse(text = paste0("ModelMetrics::", metric)))
@@ -76,26 +77,41 @@ HoldoutMetrics <- R6Class('HoldoutMetrics',
                                           }
                                           private$..train_target <- train_target
                                           private$..holdout_target <- holdout_target
-                                          private$..thresholdout <- Thresholdout$new(threshold = threshold, 
-                                                                                     sigma = sigma, 
-                                                                                     budget = ceiling((sigma / 2)^2 * 
-                                                                                                        length(holdout_target)))
+                                          private$..budget <- ceiling((tolerance)^2 * 
+                                                                        length(holdout_target))
+                                          private$..sigma <- 2 * tolerance
                                         },
                                         query = function(train_pred,
                                                          holdout_pred){
-                                          train_metric <- private$..metric(actual = private$..train_target,
+                                          train_val <- private$..metric(actual = private$..train_target,
                                                                            predicted = train_pred)[[1]] 
                                           
-                                          holdout_metric <- private$..metric(actual = private$..holdout_target,
+                                          holdout_val <- private$..metric(actual = private$..holdout_target,
                                                                              predicted = holdout_pred)[[1]]
                                           
-                                          return(private$..thresholdout$query(train_val = train_metric,
-                                                                              holdout_val = holdout_metric))
+                                          if (length(train_val) != length(holdout_val)) {
+                                            stop("The inputs of training and holdout should be compatible")
+                                          } else {
+                                            N <- length(train_val)
+                                          }
+                                          if (private$..budget < 1) {
+                                            message("Budget exhausted")
+                                          } else {
+                                            private$..noise_update(n = N)
+                                            threshold_ind <- abs(train_val - holdout_val) > private$..threshold + private$..gamma + private$..eta
+                                            if (private$..budget - sum(threshold_ind) < 1) {
+                                              message("Budget is not enough for current query")
+                                            }
+                                            private$..budget <- private$..budget - sum(threshold_ind)
+                                            result <- holdout_val + private$..xi
+                                            result[!threshold_ind] <- train_val[!threshold_ind]
+                                            private$..record <- append(private$..record, list(data.table::data.table(matrix(result, nrow = 1))))
+                                            return(result)
+                                          }
                                         }),
                           private = list(..metric = NULL,
                                          ..train_target = NULL,
-                                         ..holdout_target = NULL,
-                                         ..thresholdout = NULL),
+                                         ..holdout_target = NULL),
                           active = list(metric = function(value) {
                                           if(!missing(value)) {
                                             if(is.character(value)) {
@@ -118,24 +134,17 @@ HoldoutMetrics <- R6Class('HoldoutMetrics',
                                         threshold = function(value) {
                                           if(!missing(value)) {
                                             assert_is_numeric(value)
-                                            private$..thresholdout$threshold <- value
-                                          } else private$..thresholdout$threshold
+                                            private$..threshold <- value
+                                          } else private$..threshold
                                         },
-                                        sigma = function(value) {
+                                        tolerance = function(value) {
                                           if(!missing(value)) {
                                             assert_is_numeric(value)
-                                            private$..thresholdout$budget <- ceiling(private$..thresholdout$budget * 
-                                                                                       (value / private$..thresholdout$sigma)^2)
-                                            private$..thresholdout$sigma <- value
-                                          } else private$..thresholdout$sigma
-                                        },
-                                        budget = function() {
-                                          private$..thresholdout$budget
-                                        },
-                                        record = function() {
-                                          private$..thresholdout$record
+                                            private$..budget <- ceiling(private$..budget * 
+                                                                          (value / (private$..sigma / 2))^2)
+                                            private$..sigma <- value
+                                          } else private$..sigma / 2
                                         }),
-                          inherit = NULL,
                           lock_objects = TRUE,
                           class = TRUE,
                           portable = TRUE,
