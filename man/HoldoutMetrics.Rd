@@ -38,7 +38,7 @@ train_target <- train$y
 holdout_target <- holdout$y
 
 # build a model
-model <- glm(y ~ ., data = train, family="binomial")
+model <- glm(y ~ ., data = train, family = "binomial")
 
 # generate predictions
 train_preds <- predict(model, train)
@@ -49,12 +49,12 @@ train_metrics <- auc(actual = train_target, predicted = train_preds)
 holdout_metrics <- auc(actual = holdout_target, predicted = holdout_preds)
 
 # Thresholdout returns metrics derived from train and holdout data sets.
-Thresholdout_Obj <- Thresholdout$new(Threshold = 0.04, Sigma = 0.01, Budget = 1000)
+Thresholdout_Obj <- Thresholdout$new(threshold = 0.04, sigma = 0.01, budget = 1000)
 Thresholdout_Obj$query(train_val = train_metrics, holdout_val = holdout_metrics)
 
 
 # HoldoutMetrics simplifies this process
-HoldoutMetrics_Obj <- HoldoutMetrics$new(metric = auc,
+HoldoutMetrics_Obj <- HoldoutMetrics$new(metric = 'auc',
                                          train_target = train_target,
                                          holdout_target = holdout_target,
                                          threshold = 0.04,

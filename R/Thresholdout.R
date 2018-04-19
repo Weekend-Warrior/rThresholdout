@@ -48,7 +48,7 @@ Thresholdout <- R6Class(
       } else {
         private$..noise_update(n = N)
         threshold_ind <- abs(train_val - holdout_val) > private$..threshold + private$..gamma + private$..eta
-        if (private$..budget - sum(threshold_ind) < 1) {
+        if (private$..budget - sum(threshold_ind) < 0) {
           message("Budget is not enough for current query")
         }
         private$..budget <- private$..budget - sum(threshold_ind)

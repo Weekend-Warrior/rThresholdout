@@ -28,7 +28,7 @@
 #' holdout_target <- holdout$y
 #' 
 #' # build a model
-#' model <- glm(y ~ ., data = train, family="binomial")
+#' model <- glm(y ~ ., data = train, family = "binomial")
 #' 
 #' # generate predictions
 #' train_preds <- predict(model, train)
@@ -39,12 +39,12 @@
 #' holdout_metrics <- auc(actual = holdout_target, predicted = holdout_preds)
 #' 
 #' # Thresholdout returns metrics derived from train and holdout data sets.
-#' Thresholdout_Obj <- Thresholdout$new(Threshold = 0.04, Sigma = 0.01, Budget = 1000)
+#' Thresholdout_Obj <- Thresholdout$new(threshold = 0.04, sigma = 0.01, budget = 1000)
 #' Thresholdout_Obj$query(train_val = train_metrics, holdout_val = holdout_metrics)
 #' 
 #' 
 #' # HoldoutMetrics simplifies this process
-#' HoldoutMetrics_Obj <- HoldoutMetrics$new(metric = auc,
+#' HoldoutMetrics_Obj <- HoldoutMetrics$new(metric = 'auc',
 #'                                          train_target = train_target,
 #'                                          holdout_target = holdout_target,
 #'                                          threshold = 0.04,
@@ -66,14 +66,20 @@ HoldoutMetrics <- R6Class('HoldoutMetrics',
                                                               train_target,
                                                               holdout_target,
                                                               threshold,
-                                                              sigma,
-                                                              budget) {
-                                          private$..metric <- metric
+                                                              sigma) {
+                                          private$..metric <- if(is.character(metric)) {
+                                            assertive.types::assert_is_character(metric)
+                                            private$..metric <- eval(parse(text = paste0("ModelMetrics::", metric)))
+                                          } else {
+                                            assertive.types::assert_is_function(metric)
+                                            private$..metric <- metric
+                                          }
                                           private$..train_target <- train_target
                                           private$..holdout_target <- holdout_target
                                           private$..thresholdout <- Thresholdout$new(threshold = threshold, 
                                                                                      sigma = sigma, 
-                                                                                     budget = budget)
+                                                                                     budget = ceiling((sigma / 2)^2 * 
+                                                                                                        length(holdout_target)))
                                         },
                                         query = function(train_pred,
                                                          holdout_pred){
@@ -118,6 +124,8 @@ HoldoutMetrics <- R6Class('HoldoutMetrics',
                                         sigma = function(value) {
                                           if(!missing(value)) {
                                             assert_is_numeric(value)
+                                            private$..thresholdout$budget <- ceiling(private$..thresholdout$budget * 
+                                                                                       (value / private$..thresholdout$sigma)^2)
                                             private$..thresholdout$sigma <- value
                                           } else private$..thresholdout$sigma
                                         },
