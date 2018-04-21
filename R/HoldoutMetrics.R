@@ -80,6 +80,7 @@ HoldoutMetrics <- R6Class('HoldoutMetrics',
                                           private$..budget <- ceiling((tolerance)^2 * 
                                                                         length(holdout_target))
                                           private$..sigma <- 2 * tolerance
+                                          private$..threshold <- threshold
                                         },
                                         query = function(train_pred,
                                                          holdout_pred){
