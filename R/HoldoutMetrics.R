@@ -145,9 +145,4 @@ HoldoutMetrics <- R6Class('HoldoutMetrics',
                                                                           (value / (private$..sigma / 2))^2)
                                             private$..sigma <- value
                                           } else private$..sigma / 2
-                                        }),
-                          lock_objects = TRUE,
-                          class = TRUE,
-                          portable = TRUE,
-                          lock_class = TRUE,
-                          cloneable = FALSE)
+                                        }))
